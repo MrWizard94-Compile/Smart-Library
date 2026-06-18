@@ -194,9 +194,28 @@ curl -X POST "http://localhost:8000/maintenance/deduplicate?dry_run=true&thresho
 
 ---
 
+## Authentication (Optional)
+
+When `API_KEY` is set in the environment, these endpoints require the `X-API-Key` header:
+
+- `POST /seed`
+- `POST /execute-heal`
+- `POST /maintenance/deduplicate`
+
+```bash
+curl -X POST http://localhost:8000/seed \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-secret-key" \
+  -d '{"content": "...", "category": "Test"}'
+```
+
+---
+
 ## Error Handling
 
 - Invalid JSON or missing required fields → `422 Unprocessable Entity` (Pydantic validation)
+- Missing or invalid `X-API-Key` when `API_KEY` is configured → `401 Unauthorized`
+- Code or seed `content` exceeding `MAX_CODE_BYTES` → `413 Payload Too Large`
 - Server misconfiguration (e.g. Ollama not running or model not pulled) → `503` or degraded `/health`
 
 ## Models (Pydantic)

@@ -15,6 +15,7 @@ import sys
 import traceback
 from typing import Any, Dict, Optional
 
+from smart_code_lib.config import get_sandbox_fail_closed
 from smart_code_lib.llm.local_models import check_ollama_available, get_chat_llm
 
 DOCKER_IMAGE = "python:3.11-slim"
@@ -241,6 +242,15 @@ class SelfHealingSandbox:
         if self._should_use_docker_sandbox():
             docker_result = self.execute_in_docker(code_string, timeout=timeout)
             if self._docker_sandbox_unavailable(docker_result):
+                if get_sandbox_fail_closed():
+                    return {
+                        "success": False,
+                        "stdout": "",
+                        "error_traceback": (
+                            f"{DOCKER_UNAVAILABLE_MSG} "
+                            "(SANDBOX_FAIL_CLOSED=true; in-process fallback disabled.)"
+                        ),
+                    }
                 return self._execute_in_process(code_string)
             return docker_result
 

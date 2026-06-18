@@ -62,8 +62,16 @@ source .venv/bin/activate
 
 ## 4. Install Dependencies
 
+**Production / runtime only:**
+
 ```bash
 pip install -r smart_code_lib/requirements.txt
+```
+
+**Development (includes pytest and httpx):**
+
+```bash
+pip install -r smart_code_lib/requirements-dev.txt
 ```
 
 On first run, the embedding model (`all-MiniLM-L6-v2`) downloads automatically (~90 MB).

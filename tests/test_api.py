@@ -102,3 +102,38 @@ def test_deduplicate_endpoint(client, mock_services):
     assert response.status_code == 200
     assert response.json() == {"removed": 2, "kept": 10, "dry_run": True}
     mock_db.deduplicate.assert_called_once_with(similarity_threshold=0.9, dry_run=True)
+
+
+def test_health_degraded_when_ollama_unreachable(client_ollama_down):
+    """Health returns degraded when Ollama check fails at request time."""
+    response = client_ollama_down.get("/health")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "degraded"
+    assert "Ollama is not reachable" in body["detail"]
+
+
+@pytest.mark.parametrize(
+    "method,path,json_body",
+    [
+        (
+            "post",
+            "/seed",
+            {"content": "x", "category": "test", "language": "Python"},
+        ),
+        ("post", "/query", {"query": "hello"}),
+        ("post", "/execute-heal", {"code": "print(1)"}),
+        ("post", "/maintenance/deduplicate", None),
+    ],
+)
+def test_endpoints_return_503_when_startup_failed(
+    client_startup_failed, method, path, json_body
+):
+    """Write and query endpoints return 503 when startup failed."""
+    request = getattr(client_startup_failed, method)
+    kwargs = {"json": json_body} if json_body is not None else {}
+    response = request(path, **kwargs)
+
+    assert response.status_code == 503
+    assert "not installed" in response.json()["detail"]

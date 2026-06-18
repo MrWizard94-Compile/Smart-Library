@@ -7,7 +7,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends docker.io \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies first for better layer caching
+# Production dependencies only (pytest/httpx are in requirements-dev.txt).
 COPY smart_code_lib/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
