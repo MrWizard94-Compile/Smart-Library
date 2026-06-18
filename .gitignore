@@ -27,6 +27,7 @@ env/
 # Vector databases & storage
 .chroma_db/
 qdrant_storage/
+.hf_cache/
 
 # Testing
 .pytest_cache/

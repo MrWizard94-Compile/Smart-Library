@@ -1,6 +1,6 @@
 # Smart Code Library — Local Development Setup
 
-Step-by-step guide to run the Smart Code Library API on your machine.
+Step-by-step guide to run the Smart Code Library API on your machine using **local models only** — no cloud API keys required.
 
 ---
 
@@ -9,9 +9,9 @@ Step-by-step guide to run the Smart Code Library API on your machine.
 | Requirement | Version / Notes |
 |-------------|-----------------|
 | **Python** | 3.11 or newer |
-| **OpenAI API key** | Required for embeddings (`text-embedding-3-small`) and chat (`gpt-4o`) |
+| **Ollama** | Local LLM runtime — [https://ollama.com](https://ollama.com) |
 | **Git** | For cloning and version control |
-| **Docker** (optional) | Only needed for `docker-compose` deployment with Qdrant |
+| **Docker** (optional) | For sandbox code execution and `docker compose` deployment |
 
 ---
 
@@ -24,7 +24,25 @@ cd Smart-Library
 
 ---
 
-## 2. Create a Virtual Environment
+## 2. Install Ollama and Pull the Model
+
+**Windows / macOS / Linux:** Install Ollama from [https://ollama.com](https://ollama.com), then:
+
+```powershell
+# Windows
+.\scripts\setup-ollama.ps1
+```
+
+```bash
+# macOS / Linux
+./scripts/setup-ollama.sh
+```
+
+This pulls `llama3.2` by default. Override with `OLLAMA_MODEL` in `.env`.
+
+---
+
+## 3. Create a Virtual Environment
 
 **Windows (PowerShell):**
 
@@ -42,91 +60,79 @@ source .venv/bin/activate
 
 ---
 
-## 3. Install Dependencies
-
-From the project root (once `smart_code_lib/requirements.txt` exists):
+## 4. Install Dependencies
 
 ```bash
 pip install -r smart_code_lib/requirements.txt
 ```
 
-Expected packages:
-
-- `fastapi==0.110.0`
-- `uvicorn==0.28.0`
-- `langchain==0.1.11`
-- `langchain-openai==0.0.8`
-- `chromadb==0.4.24`
-- `pydantic==2.6.4`
-- `python-dotenv==1.0.1`
+On first run, the embedding model (`all-MiniLM-L6-v2`) downloads automatically (~90 MB).
 
 ---
 
-## 4. Configure Environment Variables
+## 5. Configure Environment (Optional)
 
-Copy the example env file and add your API key:
+Copy the example env file for overrides:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Default values (no API keys needed):
 
 ```env
-OPENAI_API_KEY=sk-your-actual-key-here
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+USE_DOCKER_SANDBOX=true
 ```
-
-> **Never commit `.env`** — it is listed in `.gitignore`.
 
 ---
 
-## 5. Run the API Server
+## 6. Run the API Server
 
-From the `smart_code_lib` directory (or project root, depending on layout):
+```powershell
+# Windows
+.\scripts\run-dev.ps1
+```
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# macOS / Linux
+./scripts/run-dev.sh
 ```
 
 The server starts at **http://localhost:8000**.
 
 - Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Health: http://localhost:8000/health
 
 ---
 
-## 6. Verify Installation
-
-**Health check via seed:**
+## 7. Verify Installation
 
 ```bash
+curl http://localhost:8000/health
+
 curl -X POST http://localhost:8000/seed \
   -H "Content-Type: application/json" \
   -d '{"content": "Hello Smart Library", "category": "Test", "language": "Python"}'
 ```
 
-**Query:**
-
-```bash
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What test content was seeded?"}'
-```
-
 ---
 
-## 7. Docker Compose (Optional)
+## 8. Docker Compose (Optional)
 
-For containerized deployment with Qdrant:
+Runs API + Ollama + Qdrant (future) together:
 
 ```bash
-export OPENAI_API_KEY=sk-your-key   # or set in .env for compose
-docker-compose up --build
+docker compose up --build
 ```
 
-API will be available on port `8000`; Qdrant on port `6333`.
+After Ollama starts, pull the model inside the container:
 
-> **Note:** The reference implementation uses ChromaDB locally. Docker Compose includes Qdrant for production-style deployments — see `references/tech-stack.md` for the Chroma vs Qdrant inconsistency.
+```bash
+docker compose exec ollama ollama pull llama3.2
+```
 
 ---
 
@@ -134,16 +140,18 @@ API will be available on port `8000`; Qdrant on port `6333`.
 
 | Issue | Solution |
 |-------|----------|
-| `OPENAI_API_KEY` not set | Ensure `.env` exists and is loaded; restart uvicorn |
+| Ollama not reachable | Run `ollama serve` or start Ollama Desktop |
+| Model not installed | Run `ollama pull llama3.2` or `.\scripts\setup-ollama.ps1` |
 | Chroma permission errors | Check write access to `./.chroma_db` |
+| Docker sandbox unavailable | Set `USE_DOCKER_SANDBOX=false` in `.env` for in-process fallback |
 | Port 8000 in use | Use `--port 8001` or stop conflicting process |
-| Import errors | Confirm venv is active and dependencies installed |
 
 ---
 
-## Directory Created at Runtime
+## Runtime Directories
 
 | Path | Purpose |
 |------|---------|
 | `.chroma_db/` | Persistent Chroma vector store (gitignored) |
+| `.hf_cache/` | HuggingFace embedding model cache (gitignored) |
 | `qdrant_storage/` | Qdrant data when using Docker Compose (gitignored) |

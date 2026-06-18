@@ -1,34 +1,20 @@
 """Chroma-backed vector memory store for semantic code library retrieval."""
 
 import hashlib
-import os
 
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
+
+from smart_code_lib.llm.local_models import DEFAULT_EMBEDDING_MODEL, get_embeddings
 
 
 class VectorMemoryStore:
-    """Persistent vector store using Chroma and OpenAI embeddings."""
+    """Persistent vector store using Chroma and local HuggingFace embeddings."""
 
     def __init__(self, persist_directory: str = "./.chroma_db"):
-        """
-        Initialize the vector store with OpenAI embeddings and Chroma persistence.
-
-        Raises:
-            ValueError: If OPENAI_API_KEY is missing from the environment.
-        """
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "OPENAI_API_KEY environment variable is required but not set. "
-                "Add it to your .env file or export it before starting the API."
-            )
-
-        self.embeddings = OpenAIEmbeddings(
-            model="text-embedding-3-small",
-            api_key=api_key,
-        )
+        """Initialize the vector store with local embeddings and Chroma persistence."""
+        self.embedding_model = DEFAULT_EMBEDDING_MODEL
+        self.embeddings = get_embeddings()
         self.db = Chroma(
             collection_name="smart_library_core",
             embedding_function=self.embeddings,

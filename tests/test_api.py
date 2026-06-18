@@ -7,11 +7,14 @@ import pytest
 
 
 def test_health_ok(client):
-    """Health returns ok when startup succeeds."""
+    """Health returns ok when startup succeeds and Ollama is reachable."""
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    body = response.json()
+    assert body["status"] == "ok"
+    assert "llm" in body
+    assert "embeddings" in body
 
 
 def test_health_degraded():

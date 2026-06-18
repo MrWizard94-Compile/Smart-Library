@@ -136,7 +136,7 @@ If all attempts fail or LLM output cannot be parsed:
 | `max_attempts` | **3** | `heal_and_verify(broken_code, max_attempts=3)` |
 | `USE_DOCKER_SANDBOX` | **true** | `.env` / environment; set `false` for in-process `exec()` only |
 | Docker execution timeout | **30s** | `safely_execute_python(..., timeout=30)` |
-| LLM model | `gpt-4o` | `ChatOpenAI(model="gpt-4o", temperature=0)` |
+| LLM model | `llama3.2` (local) | `ChatOllama` via Ollama — no API key |
 | LLM temperature | `0` | Deterministic fix generation |
 
 ---

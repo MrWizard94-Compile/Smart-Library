@@ -1,13 +1,16 @@
 """FastAPI gateway for the Smart Code Library core engine."""
 
-import os
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from smart_code_lib.database.vector_store import VectorMemoryStore
+from smart_code_lib.llm.local_models import (
+    DEFAULT_EMBEDDING_MODEL,
+    DEFAULT_OLLAMA_MODEL,
+    check_ollama_available,
+    get_chat_llm,
+)
 from smart_code_lib.sandbox.code_runner import SelfHealingSandbox
 
 load_dotenv()
@@ -16,12 +19,8 @@ app = FastAPI(title="Smart Code Library API", version="1.0.0")
 
 try:
     db = VectorMemoryStore()
+    llm = get_chat_llm()
     sandbox = SelfHealingSandbox(vector_db=db)
-    llm = ChatOpenAI(
-        model="gpt-4o",
-        temperature=0,
-        api_key=os.getenv("OPENAI_API_KEY"),
-    )
 except ValueError as exc:
     db = None
     sandbox = None
@@ -62,7 +61,16 @@ async def health_check():
     """Liveness probe for deployment and monitoring."""
     if _startup_error:
         return {"status": "degraded", "detail": _startup_error}
-    return {"status": "ok"}
+
+    ollama_ok, ollama_msg = check_ollama_available()
+    if not ollama_ok:
+        return {"status": "degraded", "detail": ollama_msg}
+
+    return {
+        "status": "ok",
+        "llm": f"ollama/{DEFAULT_OLLAMA_MODEL}",
+        "embeddings": DEFAULT_EMBEDDING_MODEL,
+    }
 
 
 @app.post("/seed")

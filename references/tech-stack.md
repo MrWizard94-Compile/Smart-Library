@@ -1,119 +1,66 @@
 # Smart Code Library — Tech Stack
 
-Technology choices, pinned versions, and rationale from the implementation plan.
+Technology choices, versions, and rationale. **All inference runs locally — no cloud API keys.**
 
 ---
 
 ## Core Stack
 
-| Layer | Technology | Version | Rationale |
-|-------|------------|---------|-----------|
-| **Runtime** | Python | 3.11+ | Async support, modern typing, LangChain compatibility |
-| **API Framework** | FastAPI | 0.110.0 | Async routing, automatic OpenAPI docs, Pydantic integration |
-| **ASGI Server** | Uvicorn | 0.28.0 | Production-grade ASGI server for FastAPI |
-| **LLM Orchestration** | LangChain | 0.1.11 | Document abstractions, vector store integrations |
-| **OpenAI Integration** | langchain-openai | 0.0.8 | Embeddings + ChatOpenAI wrappers |
-| **Validation** | Pydantic | 2.6.4 | Request/response models with strict typing |
-| **Config** | python-dotenv | 1.0.1 | Load `OPENAI_API_KEY` from `.env` |
+| Layer | Technology | Version | Role |
+|-------|-----------|---------|------|
+| **API** | FastAPI | 0.110.0 | Async HTTP gateway |
+| **Server** | Uvicorn | 0.28.0 | ASGI server |
+| **Orchestration** | LangChain | 0.1.11 | Prompt chains, document handling |
+| **Community integrations** | langchain-community | 0.0.27 | Ollama + HuggingFace wrappers |
+| **Vector DB** | ChromaDB | 0.4.24 | Local semantic search |
+| **Validation** | Pydantic | 2.6.4 | Request/response schemas |
+| **Config** | python-dotenv | 1.0.1 | Optional `.env` overrides |
 
 ---
 
-## AI Models
+## Local Models (No API Keys)
 
-| Use Case | Model | Provider |
-|----------|-------|----------|
-| Embeddings | `text-embedding-3-small` | OpenAI |
-| Query synthesis | `gpt-4o` | OpenAI |
-| Self-healing fixes | `gpt-4o` (temperature=0) | OpenAI |
+| Purpose | Model | Provider |
+|---------|-------|----------|
+| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` | HuggingFace (runs on CPU) |
+| Query synthesis | `llama3.2` (configurable) | Ollama |
+| Self-healing fixes | `llama3.2` (temperature=0) | Ollama |
 
----
+Configure via environment variables:
 
-## Data & Memory
-
-| Component | Technology | Role |
-|-----------|------------|------|
-| **Primary (dev)** | ChromaDB 0.4.24 | Local persistent vector store at `./.chroma_db` |
-| **Alternative (scale)** | Qdrant v1.8.4 | Low-latency similarity search in Docker |
-| **Metadata scale-out** | PostgreSQL + pgvector | Optional filtered metadata at scale |
-
-### Collection Details (Chroma)
-
-- Collection name: `smart_library_core`
-- Embedding function: `OpenAIEmbeddings`
-- Metadata fields: `category`, `language`
-
----
-
-## Execution & Isolation
-
-| Environment | Approach |
-|-------------|----------|
-| **Development** | In-process `exec()` with stdout capture |
-| **Production target** | Docker-isolated sandbox containers |
-
-The plan describes Docker execution for trapping stack traces safely; the initial codebase uses in-process execution for simplicity.
+```env
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+```
 
 ---
 
 ## Infrastructure
 
-| Tool | Purpose |
-|------|---------|
-| **Docker Compose** | Multi-container orchestration (API + Qdrant) |
-| **Git** | Version control; future hooks for auto-seeding docs |
+| Component | Technology | Notes |
+|-----------|-----------|-------|
+| **LLM runtime** | Ollama | Included in `docker-compose.yml` |
+| **Code sandbox** | Docker (`python:3.11-slim`) | Isolated execution, no network |
+| **Future vector scale** | Qdrant | In compose but not wired in code yet |
 
-### Docker Compose Services
+### Chroma vs Qdrant
 
-```yaml
-api_server   → FastAPI on port 8000
-qdrant_db    → Qdrant on port 6333
-```
-
-Network: `code_net` (bridge)
+- **Current:** ChromaDB with local HuggingFace embeddings (`./.chroma_db`)
+- **Compose:** Qdrant service is provisioned for future migration
+- **Action:** Use Chroma for all current development
 
 ---
 
-## Known Inconsistencies
-
-### ChromaDB vs Qdrant
-
-| Aspect | Code (`vector_store.py`) | Infrastructure (`docker-compose.yml`) |
-|--------|--------------------------|--------------------------------------|
-| Vector DB | **ChromaDB** with local persistence | **Qdrant** container provisioned |
-| Connection | `./.chroma_db` on disk | `qdrant_storage` volume, port 6333 |
-
-**Impact:** Running `docker-compose up` starts Qdrant, but the application code does not connect to it unless refactored. Local dev uses Chroma exclusively.
-
-**Resolution paths:**
-
-1. Migrate `VectorMemoryStore` to Qdrant client for production parity
-2. Remove Qdrant from compose until migration is complete
-3. Support both via environment flag (`VECTOR_BACKEND=chroma|qdrant`)
-
-### LangChain Community Import
-
-The plan references `langchain_community.vectorstores.Chroma` but `requirements.txt` lists only `langchain` and `chromadb`. You may need `langchain-community` as an explicit dependency when implementing.
-
----
-
-## Future / Planned
-
-| Feature | Description |
-|---------|-------------|
-| Git sync hooks | Auto-post `.md`/`.json` changes to `/seed` on commit |
-| Vector deduplication | Weekly cleanup of overlapping healing logs |
-| pgvector | Metadata filtering at PostgreSQL scale |
-
----
-
-## Full `requirements.txt` (Pinned)
+## Dependencies (`requirements.txt`)
 
 ```text
 fastapi==0.110.0
 uvicorn==0.28.0
 langchain==0.1.11
-langchain-openai==0.0.8
+langchain-community==0.0.27
 chromadb==0.4.24
 pydantic==2.6.4
 python-dotenv==1.0.1
+sentence-transformers>=2.2.0
 ```

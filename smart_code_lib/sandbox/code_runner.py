@@ -15,7 +15,7 @@ import sys
 import traceback
 from typing import Any, Dict, Optional
 
-from langchain_openai import ChatOpenAI
+from smart_code_lib.llm.local_models import check_ollama_available, get_chat_llm
 
 DOCKER_IMAGE = "python:3.11-slim"
 DOCKER_UNAVAILABLE_MSG = (
@@ -92,13 +92,11 @@ class SelfHealingSandbox:
         Args:
             vector_db: VectorMemoryStore instance used to record successful fixes.
         """
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "OPENAI_API_KEY environment variable is required but not set."
-            )
+        ok, message = check_ollama_available()
+        if not ok:
+            raise ValueError(message)
 
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=api_key)
+        self.llm = get_chat_llm()
         self.db = vector_db
 
     def execute_in_docker(self, code_string: str, timeout: int = 30) -> Dict[str, Any]:

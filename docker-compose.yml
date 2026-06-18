@@ -1,21 +1,32 @@
 version: '3.8'
 
 services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - code_net
+
   api_server:
     build: .
     ports:
       - "8000:8000"
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
       - USE_DOCKER_SANDBOX=${USE_DOCKER_SANDBOX:-true}
     volumes:
       - ./.chroma_db:/app/.chroma_db
+      - ./.hf_cache:/root/.cache/huggingface
       # SECURITY: Docker socket access lets this container control the host daemon.
       # Required for isolated code execution (sandbox/code_runner.py).
-      # Linux/macOS Docker Desktop: /var/run/docker.sock:/var/run/docker.sock
-      # Windows Docker Desktop (WSL2): same path inside the Linux VM is typical.
-      # Windows native pipe: see Docker Desktop docs for npipe:// mapping.
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - ollama
     networks:
       - code_net
 
@@ -33,3 +44,6 @@ services:
 networks:
   code_net:
     driver: bridge
+
+volumes:
+  ollama_data:

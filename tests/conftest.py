@@ -1,7 +1,6 @@
 """Shared pytest fixtures for Smart Code Library API tests."""
 
 import importlib
-import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -11,8 +10,6 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-os.environ.setdefault("OPENAI_API_KEY", "test-key-for-unit-tests")
 
 
 def _reload_main_with_patches(mock_db, mock_sandbox, mock_llm, *, startup_error=None):
@@ -26,11 +23,13 @@ def _reload_main_with_patches(mock_db, mock_sandbox, mock_llm, *, startup_error=
             "smart_code_lib.sandbox.code_runner.SelfHealingSandbox",
             return_value=mock_sandbox,
         ),
-        patch("smart_code_lib.main.ChatOpenAI", return_value=mock_llm),
+        patch("smart_code_lib.main.get_chat_llm", return_value=mock_llm),
     ):
         import smart_code_lib.main as main
 
         importlib.reload(main)
+
+    main.check_ollama_available = lambda: (True, "")
 
     if startup_error is not None:
         main.db = None

@@ -143,7 +143,7 @@ curl -X POST http://localhost:8000/execute-heal \
 ## Error Handling
 
 - Invalid JSON or missing required fields → `422 Unprocessable Entity` (Pydantic validation)
-- Server misconfiguration (e.g. missing `OPENAI_API_KEY`) → runtime errors on LLM/embedding calls
+- Server misconfiguration (e.g. Ollama not running or model not pulled) → `503` or degraded `/health`
 
 ## Models (Pydantic)
 

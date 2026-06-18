@@ -25,7 +25,7 @@ flowchart TB
     subgraph Sandbox["Sandbox Layer"]
         RUN[Code Runner]
         HEAL_LOOP[heal_and_verify Loop]
-        LLM[OpenAI GPT-4o]
+        LLM[Ollama — local LLM]
     end
 
     UI --> ORCH
@@ -70,19 +70,19 @@ The FastAPI application coordinates all requests:
 
 - **Async routing** for `/seed`, `/query`, and `/execute-heal`
 - Wires together `VectorMemoryStore` and `SelfHealingSandbox`
-- Uses LangChain `ChatOpenAI` for query synthesis and healing prompts
+- Uses LangChain `ChatOllama` for local query synthesis and healing prompts (no API keys)
 
 ### 2. Memory Layer (`database/vector_store.py`)
 
-- **VectorMemoryStore** wraps ChromaDB with OpenAI `text-embedding-3-small` embeddings
+- **VectorMemoryStore** wraps ChromaDB with local HuggingFace embeddings (`all-MiniLM-L6-v2`)
 - Persists to `./.chroma_db`
 - Supports `insert_reference()` and `query_context()` with category/language metadata
 - Optional production path: Qdrant or PostgreSQL with `pgvector` for metadata filtering at scale
 
 ### 3. Sandbox Layer (`sandbox/code_runner.py`)
 
-- **SelfHealingSandbox** executes Python in an isolated `exec()` context with captured stdout
-- On failure, invokes GPT-4o to produce JSON with `fixed_code` and `explanation`
+- **SelfHealingSandbox** executes Python in Docker-isolated containers (in-process fallback)
+- On failure, invokes local Ollama LLM to produce JSON with `fixed_code` and `explanation`
 - Successful patches are written back to the vector store as `"Self-Healing Patch"` entries
 - Production target: Docker-isolated containers for stronger isolation
 

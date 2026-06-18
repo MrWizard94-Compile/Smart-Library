@@ -6,7 +6,7 @@
 #
 # Prerequisites:
 #   - Python on PATH (or use full path to python.exe)
-#   - .env with OPENAI_API_KEY in the project root
+#   - Ollama running locally (no API keys required)
 #   - smart_code_lib dependencies installed (pip install -r smart_code_lib/requirements.txt)
 #
 # Dry-run preview (manual):
