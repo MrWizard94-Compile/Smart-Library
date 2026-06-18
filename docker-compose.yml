@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  api_server:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./.chroma_db:/app/.chroma_db
+    networks:
+      - code_net
+
+  # Future/scaling option: Qdrant vector store.
+  # Current application code uses ChromaDB locally (./.chroma_db) — see database/vector_store.py.
+  qdrant_db:
+    image: qdrant/qdrant:v1.8.4
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    networks:
+      - code_net
+
+networks:
+  code_net:
+    driver: bridge
