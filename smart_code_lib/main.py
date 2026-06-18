@@ -7,8 +7,8 @@ from fastapi import FastAPI, HTTPException
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
-from database.vector_store import VectorMemoryStore
-from sandbox.code_runner import SelfHealingSandbox
+from smart_code_lib.database.vector_store import VectorMemoryStore
+from smart_code_lib.sandbox.code_runner import SelfHealingSandbox
 
 load_dotenv()
 
