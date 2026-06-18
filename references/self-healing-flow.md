@@ -6,7 +6,7 @@ How the `heal_and_verify` loop works, what gets stored in the vector database, a
 
 ## Overview
 
-The **SelfHealingSandbox** (`sandbox/code_runner.py`) executes user-submitted Python code. If execution fails, it uses GPT-4o to generate fixes, retries execution, and persists successful patches to the vector memory for future retrieval.
+The **SelfHealingSandbox** (`sandbox/code_runner.py`) executes user-submitted Python code. If execution fails, it uses a local Ollama model (`qwen2.5-coder:7b` by default) to generate fixes, retries execution, and persists successful patches to the vector memory for future retrieval.
 
 Entry point: `POST /execute-heal` → `sandbox.heal_and_verify(code)`
 
@@ -22,7 +22,7 @@ flowchart TD
     EXEC --> CHECK{success?}
     CHECK -->|Yes| SUCCESS[Return Healed + code + attempts]
     CHECK -->|No| PROMPT[Build fix prompt with traceback]
-    PROMPT --> LLM[GPT-4o invoke]
+    PROMPT --> LLM[Ollama invoke]
     LLM --> PARSE{Parse JSON fixed_code?}
     PARSE -->|Yes| STORE[insert_reference to vector DB]
     STORE --> UPDATE[current_code = fixed_code]
@@ -70,7 +70,7 @@ If `success` is `True` on any attempt:
 
 ### 3. Failure Path — LLM Fix
 
-On execution failure, the sandbox sends a prompt to GPT-4o:
+On execution failure, the sandbox sends a prompt to the local Ollama LLM:
 
 ```
 Fix this code. Return a valid JSON dictionary string containing keys: 'fixed_code' and 'explanation'.
@@ -136,7 +136,7 @@ If all attempts fail or LLM output cannot be parsed:
 | `max_attempts` | **3** | `heal_and_verify(broken_code, max_attempts=3)` |
 | `USE_DOCKER_SANDBOX` | **true** | `.env` / environment; set `false` for in-process `exec()` only |
 | Docker execution timeout | **30s** | `safely_execute_python(..., timeout=30)` |
-| LLM model | `llama3.2` (local) | `ChatOllama` via Ollama — no API key |
+| LLM model | `qwen2.5-coder:7b` (local) | `ChatOllama` via Ollama — no API key |
 | LLM temperature | `0` | Deterministic fix generation |
 
 ---

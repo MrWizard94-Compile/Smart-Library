@@ -1,5 +1,16 @@
 # Pull the default local LLM model for Smart Library
-$Model = if ($env:OLLAMA_MODEL) { $env:OLLAMA_MODEL } else { "llama3.2" }
+$ProjectRoot = Split-Path -Parent $PSScriptRoot
+$EnvFile = Join-Path $ProjectRoot ".env"
+$Model = "qwen2.5-coder:7b"
+
+if ($env:OLLAMA_MODEL) {
+    $Model = $env:OLLAMA_MODEL
+} elseif (Test-Path $EnvFile) {
+    $line = Get-Content $EnvFile | Where-Object { $_ -match '^\s*OLLAMA_MODEL\s*=' } | Select-Object -First 1
+    if ($line) {
+        $Model = ($line -split '=', 2)[1].Trim().Trim('"').Trim("'")
+    }
+}
 
 Write-Host "Pulling Ollama model: $Model"
 ollama pull $Model

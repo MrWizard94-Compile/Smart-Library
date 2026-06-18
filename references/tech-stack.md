@@ -23,14 +23,14 @@ Technology choices, versions, and rationale. **All inference runs locally — no
 | Purpose | Model | Provider |
 |---------|-------|----------|
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` | HuggingFace (runs on CPU) |
-| Query synthesis | `llama3.2` (configurable) | Ollama |
-| Self-healing fixes | `llama3.2` (temperature=0) | Ollama |
+| Query synthesis | `qwen2.5-coder:7b` (configurable) | Ollama |
+| Self-healing fixes | `qwen2.5-coder:7b` (temperature=0) | Ollama |
 
 Configure via environment variables:
 
 ```env
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.2
+OLLAMA_MODEL=qwen2.5-coder:7b
 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 ```
 

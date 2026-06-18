@@ -1,24 +1,26 @@
 """Local model providers: HuggingFace embeddings + Ollama chat."""
 
 import json
-import os
 import urllib.error
 import urllib.request
 
 from langchain_community.chat_models import ChatOllama
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
+from smart_code_lib.config import (
+    get_embedding_model_name,
+    get_ollama_base_url,
+    get_ollama_model,
+)
 
-def get_embedding_model_name() -> str:
-    return os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-
-
-def get_ollama_model() -> str:
-    return os.getenv("OLLAMA_MODEL", "llama3.2")
-
-
-def get_ollama_base_url() -> str:
-    return os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+__all__ = [
+    "check_ollama_available",
+    "get_chat_llm",
+    "get_embedding_model_name",
+    "get_embeddings",
+    "get_ollama_base_url",
+    "get_ollama_model",
+]
 
 
 def get_embeddings() -> HuggingFaceEmbeddings:

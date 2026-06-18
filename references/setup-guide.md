@@ -38,7 +38,7 @@ cd Smart-Library
 ./scripts/setup-ollama.sh
 ```
 
-This pulls `llama3.2` by default. Override with `OLLAMA_MODEL` in `.env`.
+This pulls `qwen2.5-coder:7b` by default. Override with `OLLAMA_MODEL` in `.env`.
 
 ---
 
@@ -82,7 +82,7 @@ Default values (no API keys needed):
 
 ```env
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.2
+OLLAMA_MODEL=qwen2.5-coder:7b
 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 USE_DOCKER_SANDBOX=true
 ```
@@ -131,7 +131,7 @@ docker compose up --build
 After Ollama starts, pull the model inside the container:
 
 ```bash
-docker compose exec ollama ollama pull llama3.2
+docker compose exec ollama ollama pull qwen2.5-coder:7b
 ```
 
 ---
@@ -141,7 +141,7 @@ docker compose exec ollama ollama pull llama3.2
 | Issue | Solution |
 |-------|----------|
 | Ollama not reachable | Run `ollama serve` or start Ollama Desktop |
-| Model not installed | Run `ollama pull llama3.2` or `.\scripts\setup-ollama.ps1` |
+| Model not installed | Run `ollama pull qwen2.5-coder:7b` or `.\scripts\setup-ollama.ps1` |
 | Chroma permission errors | Check write access to `./.chroma_db` |
 | Docker sandbox unavailable | Set `USE_DOCKER_SANDBOX=false` in `.env` for in-process fallback |
 | Port 8000 in use | Use `--port 8001` or stop conflicting process |

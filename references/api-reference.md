@@ -6,6 +6,37 @@ Interactive docs: `http://localhost:8000/docs` (Swagger UI)
 
 ---
 
+## GET `/health`
+
+Liveness probe for deployment and monitoring. Reports startup status and Ollama availability.
+
+### Response
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | `"ok"` when services are ready; `"degraded"` on startup or Ollama failure |
+| `llm` | string | Configured Ollama model (e.g. `"ollama/qwen2.5-coder:7b"`) — present when `status` is `"ok"` |
+| `embeddings` | string | HuggingFace embedding model name — present when `status` is `"ok"` |
+| `detail` | string | Error message — present when `status` is `"degraded"` |
+
+### Example
+
+```bash
+curl http://localhost:8000/health
+```
+
+### Example Response
+
+```json
+{
+  "status": "ok",
+  "llm": "ollama/qwen2.5-coder:7b",
+  "embeddings": "sentence-transformers/all-MiniLM-L6-v2"
+}
+```
+
+---
+
 ## POST `/seed`
 
 Index reference content into the vector memory store.
@@ -136,6 +167,29 @@ curl -X POST http://localhost:8000/execute-heal \
     "attempts": 1
   }
 }
+```
+
+---
+
+## POST `/maintenance/deduplicate`
+
+Remove exact and near-duplicate documents from the vector store.
+
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `dry_run` | boolean | `true` | Preview removals without deleting |
+| `threshold` | float | `0.95` | Cosine similarity threshold for near-duplicates |
+
+### Response
+
+Returns deduplication statistics (e.g. counts of removed/kept documents and whether the run was a dry run).
+
+### Example
+
+```bash
+curl -X POST "http://localhost:8000/maintenance/deduplicate?dry_run=true&threshold=0.95"
 ```
 
 ---

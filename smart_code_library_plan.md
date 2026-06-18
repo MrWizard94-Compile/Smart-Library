@@ -1,3 +1,5 @@
+> **Historical document:** This plan reflects early design notes (including OpenAI/GPT-4o examples). For the current local-only stack, see `references/setup-guide.md`, `references/architecture.md`, `references/tech-stack.md`, and `references/api-reference.md`. Default Ollama model: `qwen2.5-coder:7b`.
+
 # Implementation Plan: Intelligent, Self-Healing Smart Code Library
 
 This blueprint provides the architecture, codebase, and infrastructure setup required to deploy a production-ready, fast, and self-healing repository for development data.

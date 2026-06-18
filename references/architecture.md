@@ -68,7 +68,7 @@ flowchart TB
 
 The FastAPI application coordinates all requests:
 
-- **Async routing** for `/seed`, `/query`, and `/execute-heal`
+- **Async routing** for `/seed`, `/query`, `/execute-heal`, `/health`, and `/maintenance/deduplicate`
 - Wires together `VectorMemoryStore` and `SelfHealingSandbox`
 - Uses LangChain `ChatOllama` for local query synthesis and healing prompts (no API keys)
 
@@ -90,18 +90,24 @@ The FastAPI application coordinates all requests:
 
 | Endpoint | Flow |
 |----------|------|
+| `GET /health` | Client → Orchestrator → startup + Ollama availability check |
 | `POST /seed` | Client → Orchestrator → VectorMemoryStore → ChromaDB |
 | `POST /query` | Client → Orchestrator → similarity search → LLM answer with context |
 | `POST /execute-heal` | Client → Sandbox execute → (on error) LLM fix loop → optional vector write-back |
+| `POST /maintenance/deduplicate` | Client → Orchestrator → VectorMemoryStore deduplicate (exact + near-duplicate removal) |
 
 ## Project Layout
 
 ```text
 smart_code_lib/
 ├── main.py
+├── config.py
 ├── database/
 │   ├── __init__.py
 │   └── vector_store.py
+├── llm/
+│   ├── __init__.py
+│   └── local_models.py
 ├── sandbox/
 │   ├── __init__.py
 │   └── code_runner.py

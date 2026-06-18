@@ -5,7 +5,8 @@ import hashlib
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
-from smart_code_lib.llm.local_models import get_embedding_model_name, get_embeddings
+from smart_code_lib.config import get_embedding_model_name
+from smart_code_lib.llm.local_models import get_embeddings
 
 
 class VectorMemoryStore:

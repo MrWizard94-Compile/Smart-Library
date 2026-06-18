@@ -1,8 +1,8 @@
 """FastAPI gateway for the Smart Code Library core engine."""
 
-from dotenv import load_dotenv
+from smart_code_lib.config import load_env
 
-load_dotenv()
+load_env()
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel

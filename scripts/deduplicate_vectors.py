@@ -6,12 +6,12 @@ import json
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-load_dotenv(PROJECT_ROOT / ".env")
+from smart_code_lib.config import load_env  # noqa: E402
+
+load_env()
 
 from smart_code_lib.database.vector_store import VectorMemoryStore  # noqa: E402
 
