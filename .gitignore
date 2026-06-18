@@ -52,3 +52,6 @@ logs/
 
 # Docker
 docker-compose.override.yml
+
+# Local agent/terminal session files
+terminals/
