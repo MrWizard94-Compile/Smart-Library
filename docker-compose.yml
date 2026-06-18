@@ -7,8 +7,15 @@ services:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - USE_DOCKER_SANDBOX=${USE_DOCKER_SANDBOX:-true}
     volumes:
       - ./.chroma_db:/app/.chroma_db
+      # SECURITY: Docker socket access lets this container control the host daemon.
+      # Required for isolated code execution (sandbox/code_runner.py).
+      # Linux/macOS Docker Desktop: /var/run/docker.sock:/var/run/docker.sock
+      # Windows Docker Desktop (WSL2): same path inside the Linux VM is typical.
+      # Windows native pipe: see Docker Desktop docs for npipe:// mapping.
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - code_net
 

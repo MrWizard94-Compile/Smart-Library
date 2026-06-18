@@ -1,0 +1,37 @@
+---
+pid: 19672
+cwd: "C:\Users\Bulkl\OneDrive\Desktop\Smart Library"
+command: "Set-Location \"C:\\Users\\Bulkl\\OneDrive\\Desktop\\Smart Library\"; python -m pip install -q -r smart_code_lib\\requirements.txt; python -m pytest tests\\ -v"
+started_at: 2026-06-18T02:16:03.284Z
+running_for_ms: 125005   
+---
+
+[notice] A new release of pip is available: 23.0.1 -> 26.1.2
+[notice] To update, run: python.exe -m pip install --upgrade pip
+============================= test session starts =============================
+platform win32 -- Python 3.10.11, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\Bulkl\AppData\Local\Programs\Python\Python310\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Bulkl\OneDrive\Desktop\Smart Library
+configfile: pytest.ini
+plugins: anyio-4.14.0
+collecting ... collected 6 items
+
+tests/test_api.py::test_health_ok PASSED                                 [ 16%]
+tests/test_api.py::test_health_degraded PASSED                           [ 33%]
+tests/test_api.py::test_seed_endpoint PASSED                             [ 50%]
+tests/test_api.py::test_query_endpoint PASSED                            [ 66%]
+tests/test_api.py::test_execute_heal_endpoint PASSED                     [ 83%]
+tests/test_api.py::test_deduplicate_endpoint PASSED                      [100%]
+
+============================== warnings summary ===============================
+tests/test_api.py::test_health_ok
+tests/test_api.py::test_health_degraded
+tests/test_api.py::test_seed_endpoint
+tests/test_api.py::test_query_endpoint
+tests/test_api.py::test_execute_heal_endpoint
+tests/test_api.py::test_deduplicate_endpoint
+  C:\Users\Bulkl\AppData\Local\Programs\Python\Python310\lib\site-packages\httpx\_client.py:690: DeprecationWarning: The 'app' shortcut is now deprecated. Use the explicit style 'transport=WSGITransport(app=...)' instead.
+    warnings.warn(message, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 6 passed, 6 warnings in 4.93s ========================

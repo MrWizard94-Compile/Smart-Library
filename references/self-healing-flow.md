@@ -38,11 +38,12 @@ flowchart TD
 
 ### 1. Initial Execution
 
-`safely_execute_python(code_string)`:
+`safely_execute_python(code_string)` (default: Docker-isolated):
 
-- Redirects `sys.stdout` to a buffer
-- Runs `exec(code_string, {})` in an isolated globals dict
-- Captures any exception traceback
+- When `USE_DOCKER_SANDBOX` is not `false`, runs code in an ephemeral `python:3.11-slim` container via `execute_in_docker`
+- Container constraints: `--network none`, `--memory 128m`, `--cpus 0.5`, read-only rootfs, code via stdin
+- Falls back to in-process `exec()` only when Docker is unavailable or `USE_DOCKER_SANDBOX=false`
+- Captures stdout and exception tracebacks from the container or in-process runner
 - Returns:
 
 ```python
@@ -133,6 +134,8 @@ If all attempts fail or LLM output cannot be parsed:
 | Parameter | Default | Location |
 |-----------|---------|----------|
 | `max_attempts` | **3** | `heal_and_verify(broken_code, max_attempts=3)` |
+| `USE_DOCKER_SANDBOX` | **true** | `.env` / environment; set `false` for in-process `exec()` only |
+| Docker execution timeout | **30s** | `safely_execute_python(..., timeout=30)` |
 | LLM model | `gpt-4o` | `ChatOpenAI(model="gpt-4o", temperature=0)` |
 | LLM temperature | `0` | Deterministic fix generation |
 
@@ -163,9 +166,10 @@ Maximum **3 executions** per request (not 3 LLM calls after success).
 
 ## Security Considerations
 
-- Current sandbox uses in-process `exec()` — suitable for trusted/dev use only
-- Production plan: Docker-isolated containers to limit filesystem/network access
-- No timeout is enforced in the reference implementation; long-running code can block the API
+- Default sandbox runs user code in ephemeral Docker containers (`execute_in_docker`) with no network, memory/CPU limits, and read-only root filesystem
+- `docker-compose.yml` mounts the Docker socket into `api_server` so it can spawn sandbox containers; this grants significant host control — restrict API access in production
+- In-process `exec()` fallback is used only when Docker is unavailable or `USE_DOCKER_SANDBOX=false` (dev/trusted use)
+- Docker execution enforces a **30s** timeout per run; in-process fallback has no timeout
 
 ---
 

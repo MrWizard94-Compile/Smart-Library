@@ -1,0 +1,2 @@
+#!/bin/sh
+python scripts/seed_changed_docs.py || true

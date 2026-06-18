@@ -95,3 +95,10 @@ async def run_and_heal(payload: CodeRunRequest):
     _ensure_ready()
     execution_report = sandbox.heal_and_verify(payload.code)
     return {"report": execution_report}
+
+
+@app.post("/maintenance/deduplicate")
+async def deduplicate_vectors(dry_run: bool = True, threshold: float = 0.95):
+    """Remove exact and near-duplicate documents from the vector store."""
+    _ensure_ready()
+    return db.deduplicate(similarity_threshold=threshold, dry_run=dry_run)

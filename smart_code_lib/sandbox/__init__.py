@@ -1,5 +1,5 @@
 """Sandbox package for isolated code execution and self-healing."""
 
-from sandbox.code_runner import SelfHealingSandbox
+from smart_code_lib.sandbox.code_runner import SelfHealingSandbox
 
 __all__ = ["SelfHealingSandbox"]
