@@ -1,19 +1,20 @@
 """FastAPI gateway for the Smart Code Library core engine."""
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from smart_code_lib.database.vector_store import VectorMemoryStore
 from smart_code_lib.llm.local_models import (
-    DEFAULT_EMBEDDING_MODEL,
-    DEFAULT_OLLAMA_MODEL,
     check_ollama_available,
     get_chat_llm,
+    get_embedding_model_name,
+    get_ollama_model,
 )
 from smart_code_lib.sandbox.code_runner import SelfHealingSandbox
-
-load_dotenv()
 
 app = FastAPI(title="Smart Code Library API", version="1.0.0")
 
@@ -68,8 +69,8 @@ async def health_check():
 
     return {
         "status": "ok",
-        "llm": f"ollama/{DEFAULT_OLLAMA_MODEL}",
-        "embeddings": DEFAULT_EMBEDDING_MODEL,
+        "llm": f"ollama/{get_ollama_model()}",
+        "embeddings": get_embedding_model_name(),
     }
 
 

@@ -5,7 +5,7 @@ import hashlib
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
-from smart_code_lib.llm.local_models import DEFAULT_EMBEDDING_MODEL, get_embeddings
+from smart_code_lib.llm.local_models import get_embedding_model_name, get_embeddings
 
 
 class VectorMemoryStore:
@@ -13,7 +13,7 @@ class VectorMemoryStore:
 
     def __init__(self, persist_directory: str = "./.chroma_db"):
         """Initialize the vector store with local embeddings and Chroma persistence."""
-        self.embedding_model = DEFAULT_EMBEDDING_MODEL
+        self.embedding_model = get_embedding_model_name()
         self.embeddings = get_embeddings()
         self.db = Chroma(
             collection_name="smart_library_core",
