@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [master, main]
@@ -7,13 +10,43 @@ on:
     branches: [master, main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  constitution:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: project
+          persist-credentials: false
+      - name: Check out accepted WPAI Constitution
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: MrWizard94-Compile/Agents-Constitution
+          ref: 89f8771df5a6fa8627cb9576afca1eefd0486d27
+          path: constitution
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+      - name: Validate canonical source and tests
+        working-directory: constitution
+        run: |
+          python tools/validate-source.py
+          python -m unittest discover -s tests -v
+      - name: Audit project adoption
+        run: python constitution/tools/check-adoption.py project
+      - name: Verify required project loader
+        run: python -m unittest discover -s project/tests -p test_governance_entry.py -v
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
           cache: pip
@@ -24,3 +57,16 @@ jobs:
 
       - name: Run tests
         run: python -m pytest tests/ -v
+
+  ci-ok:
+    needs: [constitution, test]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require both gates
+        env:
+          CONSTITUTION_RESULT: ${{ needs.constitution.result }}
+          PRODUCT_RESULT: ${{ needs.test.result }}
+        run: |
+          test "$CONSTITUTION_RESULT" = success
+          test "$PRODUCT_RESULT" = success
