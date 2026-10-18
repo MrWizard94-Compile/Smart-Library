@@ -13,6 +13,12 @@ validates its manifest/source/tests before auditing this project. This is a
 reproducible tool pin, not a permanent invocation-law freeze. Every future
 top-level invocation resolves its own accepted law under the canonical loader.
 No project historical-reference exception or scanner filter is introduced.
+An independent standard-library regression also requires the project AGENTS
+file and its canonical URL. The negative legacy scan passes on the published
+supervisory file even though that older file has no canonical loader; absence
+of a retired artifact is not itself proof of adoption. The positive loader
+contract complements the scanner, without treating text checks as proof that
+every agent will obey or even load the instructions.
 
 ```powershell
 python <verified-canonical-root>/tools/check-adoption.py <project-root>
