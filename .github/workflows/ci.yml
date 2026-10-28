@@ -23,4 +23,4 @@ jobs:
         run: pip install -r smart_code_lib/requirements-dev.txt
 
       - name: Run tests
-        run: python -m pytest tests/ -v
+        run: python -m pytest tests/ -v -m "not integration and not integration_full"

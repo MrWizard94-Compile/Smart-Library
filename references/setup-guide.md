@@ -128,6 +128,50 @@ curl -X POST http://localhost:8000/seed \
 
 ---
 
+## 7b. Integration Smoke Tests (Optional)
+
+After Ollama is running and the model is pulled, you can verify live LLM connectivity with the opt-in pytest suite in `tests/test_integration_ollama.py`.
+
+**Lean smoke tests** (`integration` marker — health, Ollama status, minimal LLM invoke):
+
+```powershell
+# Windows
+.\scripts\run-integration-tests.ps1
+```
+
+```bash
+# macOS / Linux
+chmod +x scripts/run-integration-tests.sh
+./scripts/run-integration-tests.sh
+```
+
+**Full pipeline** (`integration_full` marker — live seed + query against temp Chroma):
+
+```powershell
+$env:INTEGRATION_FULL = "1"
+.\scripts\run-integration-tests.ps1
+```
+
+```bash
+INTEGRATION_FULL=1 ./scripts/run-integration-tests.sh
+```
+
+Or invoke pytest directly:
+
+```bash
+python -m pytest tests/test_integration_ollama.py -m integration --run-integration -v
+```
+
+Optional timeout override in `.env`:
+
+```env
+INTEGRATION_LLM_TIMEOUT=120
+```
+
+Integration tests are **excluded from CI** by default. Use `--strict-integration` to fail (instead of skip) when Ollama is unavailable.
+
+---
+
 ## 8. Docker Compose (Optional)
 
 Runs API + Ollama + Qdrant (future) together:
